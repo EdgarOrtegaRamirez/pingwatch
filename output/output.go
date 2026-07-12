@@ -70,6 +70,15 @@ func (p *Printer) printText(results []monitor.Result) error {
 		line := fmt.Sprintf("%s %s [%d] %.0fms",
 			status, r.Name, r.StatusCode, r.ResponseTimeMs)
 
+		// Add SSL info
+		if r.SSL != nil {
+			if r.SSL.IsValid {
+				line += fmt.Sprintf(" | SSL: %s (%d days)", r.SSL.Subject, r.SSL.DaysRemaining)
+			} else if r.SSL.Error != "" {
+				line += fmt.Sprintf(" | SSL: %s", r.SSL.Error)
+			}
+		}
+
 		if !r.Success {
 			line += fmt.Sprintf(" — %s", r.ErrorMessage)
 			if len(r.ValidationErrors) > 1 {
@@ -95,11 +104,22 @@ func (p *Printer) printCSV(results []monitor.Result) error {
 	defer w.Flush()
 
 	// Header
-	if err := w.Write([]string{"name", "url", "status_code", "response_time_ms", "success", "error_message"}); err != nil {
+	headers := []string{"name", "url", "status_code", "response_time_ms", "success", "error_message"}
+	headers = append(headers, "ssl_subject", "ssl_days_remaining", "ssl_valid")
+	if err := w.Write(headers); err != nil {
 		return err
 	}
 
 	for _, r := range results {
+		sslSubject := ""
+		sslDays := ""
+		sslValid := ""
+		if r.SSL != nil {
+			sslSubject = r.SSL.Subject
+			sslDays = fmt.Sprintf("%d", r.SSL.DaysRemaining)
+			sslValid = fmt.Sprintf("%t", r.SSL.IsValid)
+		}
+
 		record := []string{
 			r.Name,
 			r.URL,
@@ -107,6 +127,9 @@ func (p *Printer) printCSV(results []monitor.Result) error {
 			fmt.Sprintf("%.0f", r.ResponseTimeMs),
 			fmt.Sprintf("%t", r.Success),
 			r.ErrorMessage,
+			sslSubject,
+			sslDays,
+			sslValid,
 		}
 		if err := w.Write(record); err != nil {
 			return err

@@ -6,20 +6,22 @@ import (
 	"time"
 
 	"github.com/EdgarOrtegaRamirez/pingwatch/config"
+	"github.com/EdgarOrtegaRamirez/pingwatch/history"
 	"github.com/EdgarOrtegaRamirez/pingwatch/monitor"
 	"github.com/EdgarOrtegaRamirez/pingwatch/output"
 	"github.com/spf13/cobra"
 )
 
 var (
-	configFile    string
-	outputFormat  string
-	singleURL     string
-	singleMethod  string
-	singleTimeout int
-	singleStatus  int
-	singleBody    string
-	singleContains string
+	configFile           string
+	outputFormat         string
+	singleURL            string
+	singleMethod         string
+	singleTimeout        int
+	singleStatus         int
+	singleBody           string
+	singleContains       string
+	dbPath               string
 )
 
 var checkCmd = &cobra.Command{
@@ -32,7 +34,8 @@ Examples:
   pingwatch check https://example.com https://api.example.com
   pingwatch check --config config.yaml
   pingwatch check --url https://example.com --timeout 5000
-  pingwatch check --url https://example.com --method POST --body '{"key":"value"}'`,
+  pingwatch check --url https://example.com --method POST --body '{"key":"value"}'
+  pingwatch check --config config.yaml --db history.db`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var cfg *config.MonitorConfig
 		var results []monitor.Result
@@ -112,6 +115,13 @@ Examples:
 			return fmt.Errorf("provide URLs as arguments, use --config for file-based config, or --url for a single URL")
 		}
 
+		// Save to history DB if specified
+		if dbPath != "" {
+			if err := saveResultsToDB(dbPath, results); err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: failed to save results to history: %v\n", err)
+			}
+		}
+
 		// Print results
 		fmtObj, err := output.FormatFromStr(outputFormat)
 		if err != nil {
@@ -141,6 +151,38 @@ Examples:
 	},
 }
 
+func saveResultsToDB(path string, results []monitor.Result) error {
+	store, err := history.NewStore(path)
+	if err != nil {
+		return fmt.Errorf("failed to open history database: %w", err)
+	}
+	defer store.Close()
+
+	records := make([]history.CheckRecord, len(results))
+	for i, r := range results {
+		var sslDays *int
+		var sslValid *bool
+		if r.SSL != nil {
+			sslDays = &r.SSL.DaysRemaining
+			sslValid = &r.SSL.IsValid
+		}
+
+		records[i] = history.CheckRecord{
+			Timestamp:      time.Now(),
+			EndpointName:   r.Name,
+			URL:            r.URL,
+			StatusCode:     r.StatusCode,
+			ResponseTimeMs: r.ResponseTimeMs,
+			Success:        r.Success,
+			ErrorMessage:   r.ErrorMessage,
+			SSLDaysLeft:    sslDays,
+			SSLValid:       sslValid,
+		}
+	}
+
+	return store.SaveChecks(records)
+}
+
 func init() {
 	rootCmd.AddCommand(checkCmd)
 
@@ -152,4 +194,5 @@ func init() {
 	checkCmd.Flags().IntVarP(&singleStatus, "expected-status", "s", 0, "Expected HTTP status code")
 	checkCmd.Flags().StringVarP(&singleBody, "body", "b", "", "Request body (for POST/PUT)")
 	checkCmd.Flags().StringVarP(&singleContains, "contains", "", "", "Response body must contain this string")
+	checkCmd.Flags().StringVarP(&dbPath, "db", "d", "", "Save results to SQLite history database")
 }

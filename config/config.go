@@ -138,6 +138,9 @@ func applyDefaults(cfg *MonitorConfig) {
 	if cfg.Defaults.Retries == 0 {
 		cfg.Defaults.Retries = 1
 	}
+	if cfg.Defaults.RetryDelay == 0 {
+		cfg.Defaults.RetryDelay = 1 * time.Second
+	}
 
 	for i := range cfg.Endpoints {
 		ep := &cfg.Endpoints[i]
@@ -160,6 +163,10 @@ func applyDefaults(cfg *MonitorConfig) {
 		if ep.Retries == nil {
 			v := cfg.Defaults.Retries
 			ep.Retries = &v
+		}
+		if ep.RetryDelay == nil {
+			v := cfg.Defaults.RetryDelay
+			ep.RetryDelay = &v
 		}
 		if ep.Name == "" {
 			ep.Name = ep.URL

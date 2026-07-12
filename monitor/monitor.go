@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/EdgarOrtegaRamirez/pingwatch/config"
+	"github.com/EdgarOrtegaRamirez/pingwatch/ssl"
 )
 
 // checkResult holds the raw result of a single HTTP request
@@ -18,17 +19,28 @@ type checkResult struct {
 	Err          error
 }
 
+// SSLInfo holds SSL/TLS certificate info from a check
+type SSLInfo struct {
+	Subject       string `json:"subject"`
+	Issuer        string `json:"issuer"`
+	DaysRemaining int    `json:"days_remaining"`
+	IsValid       bool   `json:"is_valid"`
+	IsExpired     bool   `json:"is_expired"`
+	Error         string `json:"error,omitempty"`
+}
+
 // Result represents the outcome of a single endpoint check
 type Result struct {
 	URL              string    `json:"url"`
 	Name             string    `json:"name"`
 	StatusCode       int       `json:"status_code"`
-	ResponseTime     time.Duration `json:"response_time_ms"`
-	ResponseTimeMs   float64   `json:"response_time_ms_val"`
+	ResponseTime     time.Duration `json:"-"`
+	ResponseTimeMs   float64   `json:"response_time_ms"`
 	Success          bool      `json:"success"`
 	ErrorMessage     string    `json:"error_message,omitempty"`
 	ResponseBody     string    `json:"-"`
 	ValidationErrors []string  `json:"validation_errors,omitempty"`
+	SSL              *SSLInfo  `json:"ssl,omitempty"`
 }
 
 // Monitor performs HTTP checks against configured endpoints
@@ -104,6 +116,24 @@ func (m *Monitor) CheckEndpoint(ep config.EndpointConfig, retries int, retryDela
 				result.ValidationErrors = append(result.ValidationErrors,
 					fmt.Sprintf("response time %dms exceeds max %dms",
 						res.ResponseTime.Milliseconds(), *ep.MaxResponseTime))
+			}
+		}
+
+		// SSL certificate check for HTTPS URLs
+		if strings.HasPrefix(strings.ToLower(ep.URL), "https://") {
+			hostname := ssl.ExtractHostname(ep.URL)
+			certInfo := ssl.GetCertificate(hostname, m.client.Timeout)
+			result.SSL = &SSLInfo{
+				Subject:       certInfo.Subject,
+				Issuer:        certInfo.Issuer,
+				DaysRemaining: certInfo.DaysRemaining,
+				IsValid:       certInfo.IsValid,
+				IsExpired:     certInfo.IsExpired,
+				Error:         certInfo.Error,
+			}
+			if !certInfo.IsValid && certInfo.Error != "" {
+				result.ValidationErrors = append(result.ValidationErrors,
+					fmt.Sprintf("SSL certificate: %s", certInfo.Error))
 			}
 		}
 

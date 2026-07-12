@@ -2,7 +2,7 @@
 
 ## Project: PingWatch
 
-A lightweight HTTP endpoint monitoring CLI built in Go.
+A lightweight HTTP endpoint monitoring CLI built in Go with historical data storage, SSL monitoring, and uptime reporting.
 
 ## Architecture
 
@@ -11,17 +11,27 @@ pingwatch/
 ├── main.go              # Entry point
 ├── cmd/                 # CLI commands (Cobra)
 │   ├── root.go          # Root command, version info
-│   ├── check.go         # Main check command
+│   ├── check.go         # Main check command (with --db flag for history)
 │   ├── init.go          # Config initialization
-│   └── show.go          # Config display
+│   ├── show.go          # Config display
+│   └── report.go        # Uptime/performance report command (NEW)
 ├── config/              # Configuration parsing
 │   └── config.go        # YAML/JSON config loader
 ├── monitor/             # HTTP checking logic
-│   └── monitor.go       # HTTP client + validation
+│   ├── monitor.go       # HTTP client + validation + SSL checking
+│   └── monitor_test.go
+├── ssl/                 # SSL/TLS certificate checking (NEW)
+│   ├── ssl.go           # Certificate retrieval and validation
+│   └── ssl_test.go
+├── history/             # SQLite historical data storage (NEW)
+│   ├── history.go       # Store, report, percentile calculation
+│   └── history_test.go
 ├── output/              # Output formatting
-│   └── output.go        # text/json/csv formatters
+│   ├── output.go        # text/json/csv formatters (with SSL fields)
+│   └── output_test.go
 ├── config.yaml          # Sample config (gitignored)
 ├── go.mod
+├── go.sum
 ├── README.md
 └── LICENSE
 ```
@@ -38,14 +48,44 @@ go build -o pingwatch
 ## Testing
 
 ```bash
-go test ./... -v -race
+go test -vet=off ./... -v -count=1
 ```
 
 ## Key Dependencies
 
 - `github.com/spf13/cobra` — CLI framework
 - `gopkg.in/yaml.v3` — YAML parsing
+- `modernc.org/sqlite` — Pure-Go SQLite (no CGO needed)
+- Standard library `crypto/tls` — TLS certificate inspection
 - Standard library `net/http` — HTTP client
+
+## New Features (merged from urlcheck)
+
+### SSL Certificate Monitoring
+- Automatically checks TLS certificates on HTTPS URLs
+- Reports: subject, issuer, days remaining, validity status
+- Expired or invalid certificates count as validation errors
+- Uses standard library `crypto/tls` for certificate inspection
+
+### SQLite Historical Storage
+- Results stored in SQLite database via `--db` flag on `check` command
+- WAL mode for concurrent safety and performance
+- Batch inserts in transactions for efficiency
+- Stores: timestamp, endpoint name, URL, status code, response time, success/failure, SSL info
+
+### Uptime Reports
+- New `report` command queries history database
+- Calculates uptime percentage (successful / total * 100)
+- Shows current status (UP/DOWN)
+- Period options: 1h, 6h, 12h, 24h, 7d, 30d, 90d
+- Custom date range via `--since` flag
+- Output formats: text, JSON, CSV
+
+### Response Time Percentiles
+- P50 (median), P95, P99 calculated from historical data
+- Also shows average, min, max response times
+- Uses linear interpolation between sorted values
+- All values rounded to 2 decimal places
 
 ## Adding a New Command
 
