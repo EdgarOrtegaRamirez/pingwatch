@@ -13,7 +13,7 @@ import (
 func newTestServer(status int, body string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(status)
-		w.Write([]byte(body))
+		_, _ = w.Write([]byte(body))
 	}))
 }
 
@@ -177,7 +177,7 @@ func TestCheckEndpointMaxResponseTime(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(200 * time.Millisecond)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(dummyBody))
+		_, _ = w.Write([]byte(dummyBody))
 	})
 	server := newTestServerFunc(handler)
 	defer server.Close()
@@ -216,7 +216,7 @@ func TestCheckEndpointPOST(t *testing.T) {
 		n, _ := r.Body.Read(buf)
 		receivedBody = string(buf[:n])
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"created": true}`))
+		_, _ = w.Write([]byte(`{"created": true}`))
 	})
 	server := newTestServerFunc(handler)
 	defer server.Close()
@@ -256,7 +256,7 @@ func TestCheckEndpointWithHeaders(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		receivedHeader = r.Header.Get("X-Test-Header")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"ok": true}`))
+		_, _ = w.Write([]byte(`{"ok": true}`))
 	})
 	server := newTestServerFunc(handler)
 	defer server.Close()
@@ -324,7 +324,7 @@ func TestCheckEndpointRetries(t *testing.T) {
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"ok": true}`))
+		_, _ = w.Write([]byte(`{"ok": true}`))
 	})
 	server := newTestServerFunc(handler)
 	defer server.Close()

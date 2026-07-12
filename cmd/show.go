@@ -33,7 +33,10 @@ var showCmd = &cobra.Command{
 
 		encoder := json.NewEncoder(os.Stdout)
 		encoder.SetIndent("", "  ")
-		encoder.Encode(cfg)
+		if err := encoder.Encode(cfg); err != nil {
+			fmt.Fprintf(os.Stderr, "Error encoding config: %v\n", err)
+			os.Exit(1)
+		}
 	},
 }
 

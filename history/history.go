@@ -140,7 +140,9 @@ func (s *Store) SaveChecks(records []CheckRecord) error {
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		_ = tx.Rollback() // no-op if committed
+	}()
 
 	stmt, err := tx.Prepare(
 		`INSERT INTO checks (timestamp, endpoint_name, url, status_code, response_time_ms, success, error_message, ssl_days_left, ssl_valid)
