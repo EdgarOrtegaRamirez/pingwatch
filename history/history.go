@@ -14,35 +14,35 @@ import (
 
 // CheckRecord represents a stored check result
 type CheckRecord struct {
-	ID            int64     `json:"id"`
-	Timestamp     time.Time `json:"timestamp"`
-	EndpointName  string    `json:"endpoint_name"`
-	URL           string    `json:"url"`
-	StatusCode    int       `json:"status_code"`
-	ResponseTimeMs float64  `json:"response_time_ms"`
-	Success       bool      `json:"success"`
-	ErrorMessage  string    `json:"error_message,omitempty"`
-	SSLDaysLeft   *int      `json:"ssl_days_left,omitempty"`
-	SSLValid      *bool     `json:"ssl_valid,omitempty"`
+	ID             int64     `json:"id"`
+	Timestamp      time.Time `json:"timestamp"`
+	EndpointName   string    `json:"endpoint_name"`
+	URL            string    `json:"url"`
+	StatusCode     int       `json:"status_code"`
+	ResponseTimeMs float64   `json:"response_time_ms"`
+	Success        bool      `json:"success"`
+	ErrorMessage   string    `json:"error_message,omitempty"`
+	SSLDaysLeft    *int      `json:"ssl_days_left,omitempty"`
+	SSLValid       *bool     `json:"ssl_valid,omitempty"`
 }
 
 // UptimeReport contains uptime statistics for an endpoint
 type UptimeReport struct {
-	EndpointName    string  `json:"endpoint_name"`
-	URL             string  `json:"url"`
-	TotalChecks     int     `json:"total_checks"`
-	SuccessfulChecks int    `json:"successful_checks"`
-	FailedChecks    int     `json:"failed_checks"`
-	UptimePercent   float64 `json:"uptime_percent"`
-	PeriodStart     string  `json:"period_start"`
-	PeriodEnd       string  `json:"period_end"`
-	CurrentStatus   string  `json:"current_status"`
-	PercentileP50   float64 `json:"percentile_p50_ms"`
-	PercentileP95   float64 `json:"percentile_p95_ms"`
-	PercentileP99   float64 `json:"percentile_p99_ms"`
-	AvgResponseMs   float64 `json:"avg_response_ms"`
-	MinResponseMs   float64 `json:"min_response_ms"`
-	MaxResponseMs   float64 `json:"max_response_ms"`
+	EndpointName     string  `json:"endpoint_name"`
+	URL              string  `json:"url"`
+	TotalChecks      int     `json:"total_checks"`
+	SuccessfulChecks int     `json:"successful_checks"`
+	FailedChecks     int     `json:"failed_checks"`
+	UptimePercent    float64 `json:"uptime_percent"`
+	PeriodStart      string  `json:"period_start"`
+	PeriodEnd        string  `json:"period_end"`
+	CurrentStatus    string  `json:"current_status"`
+	PercentileP50    float64 `json:"percentile_p50_ms"`
+	PercentileP95    float64 `json:"percentile_p95_ms"`
+	PercentileP99    float64 `json:"percentile_p99_ms"`
+	AvgResponseMs    float64 `json:"avg_response_ms"`
+	MinResponseMs    float64 `json:"min_response_ms"`
+	MaxResponseMs    float64 `json:"max_response_ms"`
 }
 
 // Store manages the SQLite database for historical check data

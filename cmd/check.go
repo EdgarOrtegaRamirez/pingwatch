@@ -13,15 +13,15 @@ import (
 )
 
 var (
-	configFile           string
-	outputFormat         string
-	singleURL            string
-	singleMethod         string
-	singleTimeout        int
-	singleStatus         int
-	singleBody           string
-	singleContains       string
-	dbPath               string
+	configFile     string
+	outputFormat   string
+	singleURL      string
+	singleMethod   string
+	singleTimeout  int
+	singleStatus   int
+	singleBody     string
+	singleContains string
+	dbPath         string
 )
 
 var checkCmd = &cobra.Command{

@@ -31,16 +31,16 @@ type SSLInfo struct {
 
 // Result represents the outcome of a single endpoint check
 type Result struct {
-	URL              string    `json:"url"`
-	Name             string    `json:"name"`
-	StatusCode       int       `json:"status_code"`
+	URL              string        `json:"url"`
+	Name             string        `json:"name"`
+	StatusCode       int           `json:"status_code"`
 	ResponseTime     time.Duration `json:"-"`
-	ResponseTimeMs   float64   `json:"response_time_ms"`
-	Success          bool      `json:"success"`
-	ErrorMessage     string    `json:"error_message,omitempty"`
-	ResponseBody     string    `json:"-"`
-	ValidationErrors []string  `json:"validation_errors,omitempty"`
-	SSL              *SSLInfo  `json:"ssl,omitempty"`
+	ResponseTimeMs   float64       `json:"response_time_ms"`
+	Success          bool          `json:"success"`
+	ErrorMessage     string        `json:"error_message,omitempty"`
+	ResponseBody     string        `json:"-"`
+	ValidationErrors []string      `json:"validation_errors,omitempty"`
+	SSL              *SSLInfo      `json:"ssl,omitempty"`
 }
 
 // Monitor performs HTTP checks against configured endpoints

@@ -100,13 +100,13 @@ func TestCheckEndpointResponseContains(t *testing.T) {
 	contains := `"hello world"`
 
 	ep := config.EndpointConfig{
-		URL:                server.URL,
-		Name:               "Test Endpoint",
-		Method:             &method,
-		ExpectedStatus:     &expectedStatus,
+		URL:                  server.URL,
+		Name:                 "Test Endpoint",
+		Method:               &method,
+		ExpectedStatus:       &expectedStatus,
 		ResponseBodyContains: &contains,
-		Retries:            &retries,
-		RetryDelay:         &retryDelay,
+		Retries:              &retries,
+		RetryDelay:           &retryDelay,
 	}
 
 	result := mon.CheckEndpoint(ep, retries, retryDelay)
@@ -128,13 +128,13 @@ func TestCheckEndpointResponseNotContains(t *testing.T) {
 	notContains := `"error"`
 
 	ep := config.EndpointConfig{
-		URL:                   server.URL,
-		Name:                  "Test Endpoint",
-		Method:                &method,
-		ExpectedStatus:        &expectedStatus,
+		URL:                     server.URL,
+		Name:                    "Test Endpoint",
+		Method:                  &method,
+		ExpectedStatus:          &expectedStatus,
 		ResponseBodyNotContains: &notContains,
-		Retries:               &retries,
-		RetryDelay:            &retryDelay,
+		Retries:                 &retries,
+		RetryDelay:              &retryDelay,
 	}
 
 	result := mon.CheckEndpoint(ep, retries, retryDelay)
@@ -156,13 +156,13 @@ func TestCheckEndpointResponseNotContainsFail(t *testing.T) {
 	notContains := `"error"`
 
 	ep := config.EndpointConfig{
-		URL:                   server.URL,
-		Name:                  "Test Endpoint",
-		Method:                &method,
-		ExpectedStatus:        &expectedStatus,
+		URL:                     server.URL,
+		Name:                    "Test Endpoint",
+		Method:                  &method,
+		ExpectedStatus:          &expectedStatus,
 		ResponseBodyNotContains: &notContains,
-		Retries:               &retries,
-		RetryDelay:            &retryDelay,
+		Retries:                 &retries,
+		RetryDelay:              &retryDelay,
 	}
 
 	result := mon.CheckEndpoint(ep, retries, retryDelay)
